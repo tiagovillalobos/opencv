@@ -23,6 +23,9 @@ from scipy import stats
 from functools import partial
 from matplotlib.widgets import Slider
 
+from pathlib import Path
+from os import path
+
 ################################################################################
 
 def showImages(**images):
@@ -42,7 +45,8 @@ def showImages(**images):
     # Enumarate the ID, window name and images passed as parameter.
     for (pos, (name, image)) in enumerate(images.items()):
         # Show the image in a new subplot.
-        plt.subplot(2, len(images) / 2, pos+1)
+        
+        plt.subplot(2, len(images), pos+1)
         plt.title(name)
         plt.imshow(image)
 
@@ -129,6 +133,8 @@ def saltAndPepperNoise(image, density):
     h, w = noised.shape
 
     # TODO: Your code here
+    noised[(np.random.rand(h, w) < density)] = [0]
+    noised[(np.random.rand(h, w) < density)] = [255]
 
     return noised
 
@@ -141,6 +147,8 @@ def gaussianNoise(image, mu, sigma):
     h, w = noised.shape
 
     # TODO: Your code here
+    norm = to_uint8(np.random.normal(mu, sigma, (h,w)))
+    noised = cv2.add(noised, norm)
 
     return noised
 
@@ -153,6 +161,8 @@ def uniformNoise(image, low, high):
     h, w = noised.shape
 
     # TODO: Your code here
+    norm = to_uint8(np.random.uniform(low, high, (h,w)))
+    noised = cv2.add(noised, norm)
 
     return noised
 
@@ -170,6 +180,8 @@ def saltAndPepperFilter(image, n=3):
     h, w = filtered.shape
 
     # TODO: Your code here
+    kernel = np.ones((n,n))*(1.0/n**2)
+    filtered = cv2.filter2D(filtered, -1, kernel)
 
     return filtered
 
@@ -182,6 +194,7 @@ def gaussianFilter(image, n=5):
     h, w = filtered.shape
 
     # TODO: Your code here
+    filtered = cv2.GaussianBlur(filtered, (n,n), 3)
 
     return filtered
 
@@ -194,6 +207,7 @@ def uniformFilter(image, n=5):
     h, w = filtered.shape
 
     # TODO: Your code here
+    filtered = cv2.GaussianBlur(filtered, (n,n), 3)
 
     return filtered
 
@@ -202,8 +216,10 @@ def uniformFilter(image, n=5):
 #<!--                              INPUT IMAGE                              -->
 #<!--------------------------------------------------------------------------->
 
+root = Path(path.dirname(path.realpath(__file__)))
+
 # Input image filename.
-filename = "./inputs/lena.jpg"
+filename = str(root / "./inputs/lena.jpg")
 
 # Loads an image from a file passed as argument.
 image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
@@ -223,8 +239,7 @@ gaussian = gaussianNoise(image, 0, 50)
 uniform = uniformNoise(image, 0, 50)
 
 # Show the original image and the noised images.
-showImages(Uniform=uniform, Gaussian=gaussian, Salt_and_Pepper=saltAndPepper,
-           Original=image)
+showImages(Uniform=uniform, Gaussian=gaussian, Salt_and_Pepper=saltAndPepper, Original=image)
 
 
 #<!--------------------------------------------------------------------------->
