@@ -1,4 +1,5 @@
 import cv2
+import time
 from pathlib import Path
 from os import path
 
@@ -22,6 +23,10 @@ def getMultiScale(detector, roi):
             roi, scaleFactor=1.1, minNeighbors=10,
             minSize=(15, 15), flags=cv2.CASCADE_SCALE_IMAGE)
 
+face_detected_count = 0
+start = time.time()
+elapsed_time = 0
+
 while True:
     ret, frame = cap.read()
 
@@ -33,6 +38,14 @@ while True:
     face = detectors['face'].detectMultiScale(
         grayscale, scaleFactor=1.05, minNeighbors=5, minSize=(30, 30),
         flags=cv2.CASCADE_SCALE_IMAGE)
+
+    if len(face) > 0:
+        face_detected_count = face_detected_count + 1
+
+    if face_detected_count == 1 :
+        elapsed_time = (time.time() - start)
+    
+    cv2.putText(frame, 'Elapsed Time:' + str(elapsed_time), (0, 20), cv2.FONT_HERSHEY_DUPLEX, 0.8, (255, 0, 0))
 
     for (fX, fY, fW, fH) in face:
 
@@ -71,5 +84,6 @@ while True:
     if cv2.waitKey(1) == ord('q'):
         break
 
+print(elapsed_time)
 cap.release()
 cv2.destroyAllWindows()
